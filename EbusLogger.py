@@ -2,6 +2,7 @@ import datetime
 import time
 import logging
 import subprocess
+import 
 
 ## rrd init 
 #rrdtool create ecotec-temp.rrd -s 60 DS:outsidetemp:GAUGE:180:U:U DS:roomTemperature:GAUGE:180:U:U DS:storagetemp:GAUGE:180:U:U DS:flowtemp:GAUGE:180:U:U DS:flowtempdesired:GAUGE:180:U:U DS:returntemp:GAUGE:180:U:U RRA:AVERAGE:0.5:1:44640
@@ -75,7 +76,7 @@ waterpressure = tempArr[0] if tempArr[0] != "ERR" else 0
 waterpressurestatus = tempArr[1] if len(tempArr) > 1 else "ERR"
 
 # aktualna moc palnika [%]
-modulationtempdesired=getRegData("ModulationTempDesired")
+power=getRegData("power")
 
 # pozostaly czas blokady czasowej ogrzewania
 remainingboilerblocktime=getRegData("RemainingBoilerblocktime")
@@ -102,7 +103,7 @@ logData = str(time.time()) + ":{outsidetemp}:{roomTemperature}:{storagetemp}:{fl
 storeDataToRRD(logData, rrdtempfile)
 
 # write other logs
-logData = str(time.time()) + ":{flame}:{cwupump}:{waterpressure}:{modulationtempdesired}:{remainingboilerblocktime}:{positionvalveset}".format(**vars())
+logData = str(time.time()) + ":{flame}:{cwupump}:{waterpressure}:{power}:{remainingboilerblocktime}:{positionvalveset}".format(**vars())
 storeDataToRRD(logData, rrdparamfile)
 
 #store data to file
