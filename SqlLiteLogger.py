@@ -15,36 +15,39 @@ class BaseModel(Model):
 class Temps(BaseModel):
     id = PrimaryKeyField()
     date = DateTimeField(default=datetime.datetime.now)
-    outdoor = DecimalField()
-    indoor = DecimalField()
-    hwcWater = DecimalField()
-    flowActual = DecimalField()
-    flowReqired = DecimalField()
-    flowReturn = DecimalField()
+    outdoor = DecimalField(default=0.0)
+    indoor = DecimalField(default=0.0)
+    hwcWater = DecimalField(default=0.0)
+    flowActual = DecimalField(default=0.0)
+    flowReqired = DecimalField(default=0.0)
+    flowReturn = DecimalField(default=0.0)
 
 
-class Params(BaseModel):
-    flame = BooleanField()
-    power = SmallIntegerField()
-    waterpressure = DecimalField()
-    blockTime = SmallIntegerField()
-    valvePosition = DecimalField()
-    hwcPump = BooleanField()
+class Params(BaseModel): 
+    flame = BooleanField(default=False) # bool
+    power = SmallIntegerField(default=0)  #int
+    waterpressure = DecimalField(default=0.0)  #float
+    blockTime = SmallIntegerField(default=0)
+    valvePosition = DecimalField(default=0.0)
+    hwcPump = BooleanField(default=False)
 
 
 class Energy(BaseModel):
     date = DateTimeField(default=datetime.datetime.now)
-    hcEnergySum= IntegerField()
-    hcEnergyCnt= IntegerField()
-    hwcEnergySum= IntegerField()
-    hwcEnergyCnt= IntegerField()
-
-
+    hcEnergySum= IntegerField(default=0)
+    hcEnergyCnt= IntegerField(default=0)
+    hwcEnergySum= IntegerField(default=0)
+    hwcEnergyCnt= IntegerField(default=0)
 
 
 db.connect()
 db.create_tables([Temps, Params, Energy])
 
+
+
+
+
+############################################################################################
 
 def sqlTestData():
     entry1 = Temps(
@@ -78,8 +81,8 @@ def sqlTestData():
 
 
 
-i = 1
-while i < 600:
-    sqlTestData()
-    i += 1
+# i = 1
+# while i < 600:
+#     sqlTestData()
+#     i += 1
 
