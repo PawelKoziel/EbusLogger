@@ -1,5 +1,5 @@
 import datetime
-import random
+#import random
 from peewee import *
 
 dbFile = "test.db"
@@ -11,7 +11,14 @@ db = SqliteDatabase(dbFile)
 class BaseModel(Model): 
     class Meta:
         database = db
+   
+    def dumpDataToFile(self, logPath):
+        logData = datetime.datetime.now().strftime("%Y-%m-%d %H:%M") + "; " + self.logSummary()
+        with open(logPath, "a") as logfile:
+            logfile.write(logData)
 
+
+# Temperatures
 class Temps(BaseModel):
     id = PrimaryKeyField()
     date = DateTimeField(default=datetime.datetime.now)
@@ -21,8 +28,11 @@ class Temps(BaseModel):
     flowActual = DecimalField(default=0.0)
     flowReqired = DecimalField(default=0.0)
     flowReturn = DecimalField(default=0.0)
+    
+    def logSummary(self):
+        return "{self.outdoor}; {self.indoor}; {self.flowActual}; {self.flowReqired}; {self.flowReturn}\n".format(**vars())
 
-
+# Parameters
 class Params(BaseModel): 
     flame = BooleanField(default=False) # bool
     power = SmallIntegerField(default=0)  #int
@@ -30,8 +40,11 @@ class Params(BaseModel):
     blockTime = SmallIntegerField(default=0)
     valvePosition = DecimalField(default=0.0)
     hwcPump = BooleanField(default=False)
-
-
+    
+    def logSummary(self):
+        return "{self.flame}; {self.power}; {self.waterpressure}; {self.blockTime}; {self.valvePosition}; {self.hwcPump}\n".format(**vars())
+    
+# Energy counters
 class Energy(BaseModel):
     date = DateTimeField(default=datetime.datetime.now)
     hcEnergySum= IntegerField(default=0)
@@ -39,9 +52,17 @@ class Energy(BaseModel):
     hwcEnergySum= IntegerField(default=0)
     hwcEnergyCnt= IntegerField(default=0)
 
+    def logSummary(self):
+        return "{self.hcEnergySum}; {self.hcEnergyCnt}; {self.hwcEnergySum}; {self.hwcEnergyCnt}\n".format(**vars())
+
 
 db.connect()
 db.create_tables([Temps, Params, Energy])
+
+
+
+
+
 
 
 

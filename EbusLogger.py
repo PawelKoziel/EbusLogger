@@ -6,21 +6,17 @@ from SqlLiteLogger import *
 
 #configuration:  start
 ebusIp="127.0.0.1"; 
-outdir="/home/pi/rrdlogs/"
+outdir="/home/pkoziel/EbusLogger/"
 
-counterlog = outdir + "vaillant-prenergy.log"
 ecoteclog = outdir + "vaillant-ecotec.log"
+counterlog = outdir + "vaillant-prenergy.log"
+
+logging.basicConfig(filename = 'error.log', format='%(asctime)s; %(message)s', datefmt='%Y-%m-%d %H:%M')
 
 
 def getRegData(regName, circuit="bai"):
     try:
-        #result = subprocess.check_output(['/usr/bin/ebusctl','-s', ebusIp, 'read' , '-m', '30', '-c', circuit, regName]).strip()
-        # if type(varName) == bool:result = 'on;NOK'
-        # if type(varName) == float: result = '1.1;OK'
-        # if type(varName) == int: result = '10;OK'
-        result = '0;OK'
-
-
+        result = subprocess.check_output(['/usr/bin/ebusctl','-s', ebusIp, 'read' , '-m', '30', '-c', circuit, regName]).strip()
         result = result.upper()
         if result.startswith("ERR"): return 0
         if ';' in result: result = result.split(";")[0]
@@ -29,7 +25,7 @@ def getRegData(regName, circuit="bai"):
         return result
 
     except subprocess.CalledProcessError as grepexc:
-        print("error code", grepexc.returncode, grepexc.output)
+        logging.error("Error getting: ", grepexc.returncode, grepexc.output)
         return 0
 
 
@@ -74,40 +70,26 @@ temp.hwcWater = getRegData("StorageTemp")
 hwcPump = getRegData("CirPump");
 
 
-
-#####################################################################################
-
-# # write temperature logs
-# logData = str(time.time()) + ":{outsidetemp}:{roomTemperature}:{storagetemp}:{flowtemp}:{flowtempdesired}:{returntemp}".format(**vars())
-# storeDataToRRD(logData, rrdtempfile)
-
-# # write other logs
-# logData = str(time.time()) + ":{flame}:{cwupump}:{waterpressure}:{power}:{remainingboilerblocktime}:{positionvalveset}".format(**vars())
-# storeDataToRRD(logData, rrdparamfile)
-
-# #store data to file
-# logData = "{outsidetemp}; {roomTemperature}; {storagetemp}; {flame}; {cwupump}; {waterpressure}".format(**vars())
-# logging.info(logData)
-
+#############################################
 #insert to db
 temp.save()
 params.save()
 
+# #store data to file 
+temp.dumpDataToFile(ecoteclog)
+#params.dumpDataToFile(ecoteclog)
+
 # Power counters
 if datetime.datetime.now().minute == 0:
     energy = Energy()
-    #zoba dla hc2
-
     energy.hcEnergySum=getRegData("PrEnergySumHc1") 
     energy.hcEnergyCnt=getRegData("PrEnergyCountHc1")
     energy.hwcEnergySum=getRegData("PrEnergySumHwc1")
-    energy.hwcEnergyCnt=getRegData("PrEnergyCountHwc1")
-    
+    energy.hwcEnergyCnt=getRegData("PrEnergyCountHwc1")   
     energy.save()
 
-    logString3 = datetime.datetime.now().strftime("%Y-%m-%d %H:%M") + "; {prenergysumhc1}; {prenergycounterhc1}; {prenergysumhwc1}; {prenergycounterhwc1}\n".format(**vars())
-    #with open(counterlog, "a") as myfile:
-    #    myfile.write(logString3)
+    energy.dumpDataToFile(counterlog)
 
-
-
+    # logString = datetime.datetime.now().strftime("%Y-%m-%d %H:%M") + "; {prenergysumhc1}; {prenergycounterhc1}; {prenergysumhwc1}; {prenergycounterhwc1}\n".format(**vars())
+    # with open(counterlog, "a") as myfile:
+    #     myfile.write(logString)
